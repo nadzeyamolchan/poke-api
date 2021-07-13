@@ -4,6 +4,7 @@ import {
   NotFoundException,
   Param,
   ParseIntPipe,
+  Query,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Pokemon } from './pokemon.entity';
@@ -21,7 +22,22 @@ export class PokemonController {
 
   @Get()
   async findAllPokemon() {
-    return await this.pokemonRepository.createQueryBuilder('pokemon').getMany();
+    return await this.pokemonRepository
+      .createQueryBuilder('pokemon')
+      .leftJoinAndSelect('pokemon.types', 'types')
+      .getMany();
+  }
+
+  @Get('/search?')
+  async searchPokemon(@Query('name') name: string): Promise<Pokemon[]> {
+    return await this.pokemonRepository
+      .createQueryBuilder('pokemon')
+      .leftJoinAndSelect('pokemon.types', 'types')
+      .where(`pokemon.name ILIKE :search`, {
+        search: `%${name}%`,
+      })
+      .orderBy('pokemon.id')
+      .getMany();
   }
 
   @Get('/type')
