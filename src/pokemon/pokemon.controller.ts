@@ -1,6 +1,15 @@
-import { Controller, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { Pokemon } from './pokemon.entity';
 import { PokemonService } from './pokemon.service';
+import { UploadPokemonDto } from './data/upload-pokemon.dto';
 
 @Controller('pokemon')
 export class PokemonController {
@@ -28,4 +37,7 @@ export class PokemonController {
   async findOne(@Param('id', ParseIntPipe) id: number) {
     return this.pokemonService.petPokemonById(id);
   }
+
+  @Post()
+  async uploadPokemon(@Body() data: UploadPokemonDto) {}
 }
