@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Pokemon } from './pokemon.entity';
-import { Repository } from 'typeorm';
+import { Repository, SelectQueryBuilder } from 'typeorm';
 import { Type } from './type.entity';
 
 @Controller('pokemon')
@@ -28,16 +28,24 @@ export class PokemonController {
       .getMany();
   }
 
-  @Get('/search?')
-  async searchPokemon(@Query('name') name: string): Promise<Pokemon[]> {
-    return await this.pokemonRepository
+  @Get('/search')
+  async searchPokemon(
+    @Query('name') name: string,
+    @Query('types') types: string[],
+  ): Promise<Pokemon[]> {
+    const query = this.pokemonRepository
       .createQueryBuilder('pokemon')
-      .leftJoinAndSelect('pokemon.types', 'types')
-      .where(`pokemon.name ILIKE :search`, {
-        search: `%${name}%`,
-      })
-      .orderBy('pokemon.id')
-      .getMany();
+      .leftJoinAndSelect('pokemon.types', 'pokemonTypes');
+
+    if (name) {
+      this.addSearchCriteria(query, name);
+    }
+
+    if (types && types.length > 0) {
+      this.addTypeCriteria(query, types);
+    }
+
+    return await query.orderBy('pokemon.id').getMany();
   }
 
   @Get('/type')
@@ -54,5 +62,23 @@ export class PokemonController {
       throw new NotFoundException(null, "Pokemon doesn't exist");
     }
     return pokemon;
+  }
+
+  private addSearchCriteria(
+    query: SelectQueryBuilder<any>,
+    searchText: string,
+  ): void {
+    query.where(`pokemon.name ILIKE :search`, {
+      search: `%${searchText}%`,
+    });
+  }
+
+  private addTypeCriteria(
+    query: SelectQueryBuilder<any>,
+    types: string[],
+  ): void {
+    query.andWhere(`pokemonTypes.name IN (:types)`, {
+      types: types,
+    });
   }
 }
