@@ -1,18 +1,17 @@
 import {
-  Body,
   Controller,
   Get,
+  Logger,
   Param,
   ParseIntPipe,
-  Post,
   Query,
 } from '@nestjs/common';
-import { Pokemon } from './pokemon.entity';
 import { PokemonService } from './pokemon.service';
-import { UploadPokemonDto } from './data/upload-pokemon.dto';
+import { PokemonList } from './pagination/pokemon.list';
 
 @Controller('pokemon')
 export class PokemonController {
+  private readonly logger = new Logger(PokemonController.name);
   constructor(private readonly pokemonService: PokemonService) {}
 
   @Get()
@@ -21,11 +20,9 @@ export class PokemonController {
   }
 
   @Get('/search')
-  async searchPokemon(
-    @Query('name') name: string,
-    @Query('types') types: string[],
-  ): Promise<Pokemon[]> {
-    return this.pokemonService.filterPokemonByCriteria(name, types);
+  async getPokemonPage(@Query() filter: PokemonList) {
+    this.logger.debug(filter);
+    return this.pokemonService.filterPokemonByCriteriaPaginated(filter);
   }
 
   @Get('/type')
@@ -37,7 +34,4 @@ export class PokemonController {
   async findOne(@Param('id', ParseIntPipe) id: number) {
     return this.pokemonService.petPokemonById(id);
   }
-
-  @Post()
-  async uploadPokemon(@Body() data: UploadPokemonDto) {}
 }

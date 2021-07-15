@@ -1,7 +1,7 @@
 import { registerAs } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
-import { Pokemon } from '../pokemon/pokemon.entity';
-import { Type } from '../pokemon/type.entity';
+import { Pokemon } from '../pokemon/entities/pokemon.entity';
+import { Type } from '../pokemon/entities/type.entity';
 
 export default registerAs(
   'orm.config',

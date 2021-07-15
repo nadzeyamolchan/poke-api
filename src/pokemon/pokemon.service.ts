@@ -1,8 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Pokemon } from './pokemon.entity';
+import { Pokemon } from './entities/pokemon.entity';
 import { Repository, SelectQueryBuilder } from 'typeorm';
-import { Type } from './type.entity';
+import { Type } from './entities/type.entity';
+import { PokemonList } from './pagination/pokemon.list';
+import { PaginationResult } from './pagination/pagination-result';
 
 @Injectable()
 export class PokemonService {
@@ -12,6 +14,7 @@ export class PokemonService {
     @InjectRepository(Type)
     private readonly pokemonTypeRepository: Repository<Type>,
   ) {}
+
   private static addSearchCriteria(
     query: SelectQueryBuilder<any>,
     searchText: string,
@@ -27,6 +30,32 @@ export class PokemonService {
   ): void {
     query.andWhere(`pokemonTypes.name IN (:types)`, {
       types: types,
+    });
+  }
+
+  public async filterPokemonByCriteriaPaginated(filter: PokemonList) {
+    const query = this.pokemonRepository
+      .createQueryBuilder('pokemon')
+      .leftJoinAndSelect('pokemon.types', 'pokemonTypes');
+
+    if (filter.name) {
+      PokemonService.addSearchCriteria(query, filter.name);
+    }
+
+    if (filter.types.length) {
+      PokemonService.addTypeCriteria(query, filter.types);
+    }
+    const data = await query
+      .take(filter.limit)
+      .skip(filter.offset)
+      .orderBy('pokemon.id')
+      .getMany();
+
+    const count = await query.getCount();
+
+    return new PaginationResult({
+      total: count,
+      data: data,
     });
   }
 
@@ -49,20 +78,5 @@ export class PokemonService {
       throw new NotFoundException(null, "Pokemon doesn't exist");
     }
     return pokemon;
-  }
-
-  public async filterPokemonByCriteria(name: string, types: string[]) {
-    const query = this.pokemonRepository
-      .createQueryBuilder('pokemon')
-      .leftJoinAndSelect('pokemon.types', 'pokemonTypes');
-
-    if (name) {
-      PokemonService.addSearchCriteria(query, name);
-    }
-
-    if (types && types.length > 0) {
-      PokemonService.addTypeCriteria(query, types);
-    }
-    return await query.orderBy('pokemon.id').getMany();
   }
 }

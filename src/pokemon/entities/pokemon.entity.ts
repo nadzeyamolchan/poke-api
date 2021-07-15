@@ -11,7 +11,7 @@ import { Type } from './type.entity';
 export class Pokemon {
   @PrimaryGeneratedColumn()
   id: number;
-  @Column()
+  @Column({ unique: true })
   name: string;
   @Column()
   weight: number;
