@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Pokemon } from './entities/pokemon.entity';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import { Type } from './entities/type.entity';
-import { PokemonList } from './pagination/pokemon.list';
+import { PokemonPageDTO } from './pagination/pokemonPageDTO';
 import { PaginationResult } from './pagination/pagination-result';
 
 @Injectable()
@@ -19,7 +19,7 @@ export class PokemonService {
     query: SelectQueryBuilder<any>,
     searchText: string,
   ): void {
-    query.where(`pokemon.name ILIKE :search`, {
+    query.andWhere(`pokemon.name ILIKE :search`, {
       search: `%${searchText}%`,
     });
   }
@@ -28,30 +28,48 @@ export class PokemonService {
     query: SelectQueryBuilder<any>,
     types: string[],
   ): void {
-    query.andWhere(`pokemonTypes.name IN (:types)`, {
-      types: types,
+    query.andWhere(`types.name IN (:...types)`, {
+      types: Array.isArray(types) ? types : Array.of(types),
     });
   }
 
-  public async filterPokemonByCriteriaPaginated(filter: PokemonList) {
+  private createFilterIdsQuery(
+    filter: PokemonPageDTO,
+  ): SelectQueryBuilder<any> {
     const query = this.pokemonRepository
       .createQueryBuilder('pokemon')
-      .leftJoinAndSelect('pokemon.types', 'pokemonTypes');
+      .select('pokemon.id')
+      .distinct(true)
+      .innerJoin('pokemon.types', 'types');
 
     if (filter.name) {
       PokemonService.addSearchCriteria(query, filter.name);
     }
 
-    if (filter.types.length) {
+    if (filter.types && filter.types.length > 0) {
       PokemonService.addTypeCriteria(query, filter.types);
     }
-    const data = await query
-      .take(filter.limit)
-      .skip(filter.offset)
-      .orderBy('pokemon.id')
-      .getMany();
 
-    const count = await query.getCount();
+    return query.orderBy('pokemon.id');
+  }
+
+  public async filterPokemonByCriteriaPaginated(filter: PokemonPageDTO) {
+    const filterIdsQuery = this.createFilterIdsQuery(filter);
+
+    const count = await filterIdsQuery.getCount();
+
+    const query = this.pokemonRepository
+      .createQueryBuilder('pokemon')
+      .leftJoinAndSelect('pokemon.types', 'type')
+      .where(
+        `pokemon.id in (${filterIdsQuery
+          .limit(filter.limit)
+          .offset(filter.offset)
+          .getQuery()})`,
+        filterIdsQuery.getParameters(),
+      );
+
+    const data = await query.orderBy('pokemon.id').getMany();
 
     return new PaginationResult({
       total: count,

@@ -7,7 +7,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { PokemonService } from './pokemon.service';
-import { PokemonList } from './pagination/pokemon.list';
+import { PokemonPageDTO } from './pagination/pokemonPageDTO';
 
 @Controller('pokemon')
 export class PokemonController {
@@ -20,7 +20,7 @@ export class PokemonController {
   }
 
   @Get('/search')
-  async getPokemonPage(@Query() filter: PokemonList) {
+  async getPokemonPage(@Query() filter: PokemonPageDTO) {
     this.logger.debug(filter);
     return this.pokemonService.filterPokemonByCriteriaPaginated(filter);
   }

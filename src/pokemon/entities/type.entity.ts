@@ -7,6 +7,6 @@ export class Type {
   id: number;
   @Column()
   name: string;
-  @ManyToMany(() => Pokemon, (pokemon: Pokemon) => pokemon.types)
+  @ManyToMany(() => Pokemon, (pokemon) => pokemon.types)
   pokemon: Pokemon[];
 }

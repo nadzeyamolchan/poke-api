@@ -1,4 +1,4 @@
-export class PokemonList {
+export class PokemonPageDTO {
   name?: string;
   types?: string[];
   limit: number;
