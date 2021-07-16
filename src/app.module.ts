@@ -6,6 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import ormConfig from './config/orm.config';
 import ormConfigProd from './config/orm.config.prod';
 import { PokemonModule } from './pokemon/pokemon.module';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
@@ -20,6 +21,9 @@ import { PokemonModule } from './pokemon/pokemon.module';
         process.env.NODE_ENV !== 'production' ? ormConfig : ormConfigProd,
     }),
     PokemonModule,
+    HttpModule.register({
+      baseURL: 'https://pokeapi.co/api/v2/',
+    }),
   ],
   controllers: [AppController],
   providers: [AppService],
