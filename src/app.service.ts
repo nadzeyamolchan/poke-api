@@ -1,8 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
+import { getRepository } from 'typeorm';
+import { Pokemon } from './pokemon/entities/pokemon.entity';
+import { Type } from './pokemon/entities/type.entity';
 
 @Injectable()
 export class AppService {
+  private readonly logger = new Logger(AppService.name);
+
   public getAllPokemonTypes(): Promise<any> {
     return axios.get('/type').then((res) => {
       const pokemonTypes = res.data.results.map((item) => item.name);
@@ -25,8 +30,14 @@ export class AppService {
 
   private getPokemonByName(name): Promise<any> {
     return axios.get(`/pokemon/${name}`).then((res) => {
-      console.log('Loaded pokemon with name: ', res.data.name);
-      return { name: res.data.name };
+      return {
+        id: res.data.id,
+        name: res.data.name,
+        weight: res.data.weight,
+        height: res.data.height,
+        sprite: res.data.sprites.other['official-artwork']['front_default'],
+        types: res.data.types.map((item) => item.type).map((type) => type.name),
+      };
     });
   }
 
@@ -41,13 +52,35 @@ export class AppService {
       .then((res) => res.data.results);
   }
 
-  public async getAllPokemon() {
+  public async getAllPokemon(): Promise<any> {
     const pokemonArray = await this.getPokemonNames();
-    pokemonArray.forEach(
-      (
-        pokemon, //refactor to plain "for" function. Incorrect /pokeapi.co server answer
-      ) =>
-        this.getPokemonByName(pokemon.name).then((data) => console.log(data)),
-    );
+    let count = 0;
+    for (let i = 0; i < 25; i++) {
+      const { height, id, name, sprite, types, weight } =
+        await this.getPokemonByName(pokemonArray[i].name);
+      const pokemonRepository = getRepository(Pokemon);
+      const typesRepository = getRepository(Type);
+      const currentPokemon = await pokemonRepository.find({
+        name: name,
+      });
+
+      const currentPokemonTypes = await typesRepository
+        .createQueryBuilder('types')
+        .where('types.name IN (:...pokemonTypes)', { pokemonTypes: types })
+        .getMany();
+
+      if (currentPokemon.length === 0) {
+        const pokemonItem = new Pokemon();
+        pokemonItem.types = currentPokemonTypes;
+        pokemonItem.name = name;
+        pokemonItem.id = id;
+        pokemonItem.sprite = sprite;
+        pokemonItem.weight = weight;
+        pokemonItem.height = height;
+        await pokemonRepository.save(pokemonItem);
+        count++;
+      }
+    }
+    this.logger.debug(`${count} pokemon has been loaded`);
   }
 }
