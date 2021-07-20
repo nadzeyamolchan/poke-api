@@ -14,11 +14,6 @@ export class PokemonController {
   private readonly logger = new Logger(PokemonController.name);
   constructor(private readonly pokemonService: PokemonService) {}
 
-  @Get()
-  async findAllPokemon() {
-    return this.pokemonService.getAllPokemon();
-  }
-
   @Get('/search')
   async getPokemonPage(@Query() filter: PokemonPageDTO) {
     this.logger.debug(filter);
