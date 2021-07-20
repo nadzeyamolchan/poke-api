@@ -1,15 +1,9 @@
-import {
-  Column,
-  Entity,
-  ManyToMany,
-  PrimaryGeneratedColumn,
-  JoinTable,
-} from 'typeorm';
+import { Column, Entity, ManyToMany, PrimaryColumn, JoinTable } from 'typeorm';
 import { Type } from './type.entity';
 
 @Entity('pokemon')
 export class Pokemon {
-  @PrimaryGeneratedColumn()
+  @PrimaryColumn()
   id: number;
   @Column({ unique: true })
   name: string;
@@ -17,7 +11,7 @@ export class Pokemon {
   weight: number;
   @Column()
   height: number;
-  @Column()
+  @Column({ nullable: true })
   sprite: string;
   @ManyToMany(() => Type, (type: Type) => type.pokemon, { cascade: true })
   @JoinTable({

@@ -22,7 +22,7 @@ import { HttpModule } from '@nestjs/axios';
     }),
     PokemonModule,
     HttpModule.register({
-      baseURL: 'https://pokeapi.co/api/v2/',
+      baseURL: process.env.API_BASE_URL,
     }),
   ],
   controllers: [AppController],

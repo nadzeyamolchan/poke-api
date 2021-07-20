@@ -1,11 +1,11 @@
-import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToMany, PrimaryColumn } from 'typeorm';
 import { Pokemon } from './pokemon.entity';
 
 @Entity('types')
 export class Type {
-  @PrimaryGeneratedColumn()
+  @PrimaryColumn()
   id: number;
-  @Column()
+  @Column({ unique: true })
   name: string;
   @ManyToMany(() => Pokemon, (pokemon) => pokemon.types)
   pokemon: Pokemon[];
