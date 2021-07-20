@@ -65,13 +65,6 @@ export class PokemonService {
     });
   }
 
-  public async getAllPokemon() {
-    return await this.pokemonRepository
-      .createQueryBuilder('pokemon')
-      .leftJoinAndSelect('pokemon.types', 'types')
-      .getMany();
-  }
-
   public async getAllPokemonTypes() {
     return await this.pokemonTypeRepository
       .createQueryBuilder('pokemonType')
