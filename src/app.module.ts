@@ -7,6 +7,7 @@ import ormConfig from './config/orm.config';
 import ormConfigProd from './config/orm.config.prod';
 import { PokemonModule } from './pokemon/pokemon.module';
 import { HttpModule } from '@nestjs/axios';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { HttpModule } from '@nestjs/axios';
     HttpModule.register({
       baseURL: process.env.API_BASE_URL,
     }),
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
