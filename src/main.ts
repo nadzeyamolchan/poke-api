@@ -6,6 +6,6 @@ async function bootstrap() {
   axios.defaults.baseURL = 'https://pokeapi.co/api/v2/';
 
   const app = await NestFactory.create(AppModule);
-  await app.listen(process.env.PORT || 3000);
+  await app.listen(process.env.PORT || 3001);
 }
 bootstrap();
