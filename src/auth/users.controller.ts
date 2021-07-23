@@ -17,13 +17,13 @@ export class UsersController {
   async create(@Body() createUserDto: CreateUserDto) {
     const user = new User();
 
-    if (createUserDto.password !== createUserDto.retypepassword) {
+    if (createUserDto.password !== createUserDto.confirmPassword) {
       throw new BadRequestException(['Passwords are not identical!']);
     }
 
     const existingUSer = await this.userRepository.findOne({
       where: [
-        { username: createUserDto.username },
+        { username: createUserDto.userName },
         { email: createUserDto.email },
       ],
     });
@@ -32,7 +32,7 @@ export class UsersController {
       throw new BadRequestException(['username or email is already taken']);
     }
 
-    user.username = createUserDto.username;
+    user.username = createUserDto.userName;
     user.password = await this.authService.hashPassword(createUserDto.password);
     user.email = createUserDto.email;
 
