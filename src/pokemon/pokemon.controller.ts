@@ -4,16 +4,18 @@ import {
   Logger,
   Param,
   ParseIntPipe,
-  Query,
+  Query, UseGuards,
 } from '@nestjs/common';
 import { PokemonService } from './pokemon.service';
 import { PokemonPageDTO } from './pagination/pokemonPageDTO';
+import { AuthGuardJwt } from '../auth/guards/auth-guard.jwt';
 
 @Controller('pokemon')
 export class PokemonController {
   private readonly logger = new Logger(PokemonController.name);
   constructor(private readonly pokemonService: PokemonService) {}
 
+  @UseGuards(AuthGuardJwt)
   @Get('/search')
   async getPokemonPage(@Query() filter: PokemonPageDTO) {
     this.logger.debug(filter);
