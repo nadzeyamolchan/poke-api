@@ -4,7 +4,8 @@ import {
   Logger,
   Param,
   ParseIntPipe,
-  Query, UseGuards,
+  Query,
+  UseGuards,
 } from '@nestjs/common';
 import { PokemonService } from './pokemon.service';
 import { PokemonPageDTO } from './pagination/pokemonPageDTO';
@@ -22,6 +23,7 @@ export class PokemonController {
     return this.pokemonService.filterPokemonByCriteriaPaginated(filter);
   }
 
+  @UseGuards(AuthGuardJwt)
   @Get('/type')
   async findAllPokemonTypes() {
     return this.pokemonService.getAllPokemonTypes();
