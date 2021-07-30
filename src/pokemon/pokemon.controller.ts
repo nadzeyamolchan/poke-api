@@ -14,6 +14,7 @@ import { AuthGuardJwt } from '../auth/guards/auth-guard.jwt';
 @Controller('pokemon')
 export class PokemonController {
   private readonly logger = new Logger(PokemonController.name);
+
   constructor(private readonly pokemonService: PokemonService) {}
 
   @UseGuards(AuthGuardJwt)
@@ -29,8 +30,9 @@ export class PokemonController {
     return this.pokemonService.getAllPokemonTypes();
   }
 
+  @UseGuards(AuthGuardJwt)
   @Get('/:id')
   async findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.pokemonService.petPokemonById(id);
+    return this.pokemonService.getPokemonById(id);
   }
 }

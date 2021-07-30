@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Pokemon } from './entities/pokemon.entity';
 import { Repository, SelectQueryBuilder } from 'typeorm';
+import { Pokemon } from './entities/pokemon.entity';
 import { Type } from './entities/type.entity';
 import { PokemonPageDTO } from './pagination/pokemonPageDTO';
 import { PaginationResult } from './pagination/pagination-result';
@@ -71,7 +71,7 @@ export class PokemonService {
       .getMany();
   }
 
-  public async petPokemonById(id: number) {
+  public async getPokemonById(id: number) {
     const pokemon = await this.pokemonRepository.findOne(id);
     if (!pokemon) {
       throw new NotFoundException(null, "Pokemon doesn't exist");
